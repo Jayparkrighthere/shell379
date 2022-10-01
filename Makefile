@@ -1,5 +1,5 @@
 CC = g++
-OBJ = main.o process_input.o
+OBJ = main.o format_input.o
 
 shell379: shell.out
 	./shell.out
@@ -8,7 +8,7 @@ shell.out: $(OBJ)
 	$(CC) -o shell.out $(OBJ) -g
 main.o: 
 	$(CC) -c main.cpp
-process_input.o:
-	$(CC) -c process_input.cpp
+format_input.o:
+	$(CC) -c format_input.cpp
 clean:
 	rm -f shell.out $(OBJ)

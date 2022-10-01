@@ -1,11 +1,12 @@
 #include "header.h"
 #define __SHELL379_H_
-
+#include <cstring>
 // TODO: test if ps returns the command you used for you shell379 programs
 // TODO: processConroltable class.
 
 int execBuiltInCmd(char *args[])
 {
+    cout << "exectuing execbuildin cmd" << endl;
     if (strcmp(args[0], "sleep") == 0)
     {
         cout << "executing sleep" << endl;
@@ -21,6 +22,7 @@ int execBuiltInCmd(char *args[])
 
 int execCMD(char *args[], char *inputFile, char *outputFile, bool *isUsingFiles, bool isBackGround)
 {
+    cout << "exectuing normal cmd" << endl;
     int inputFileDescriptor, outputFileDescriptor;
 
     // create new process here
@@ -90,7 +92,7 @@ bool isBuiltInCMD(char *args[])
                            "sleep",
                            "suspend",
                            "wait", NULL};
-    int index;
+    int index = 0;
     while (builtInCMD[index] != NULL)
     {
         if (strcmp(args[0], builtInCMD[index]) == 0)
@@ -104,7 +106,7 @@ int main(int argc, char *argv[])
 {
     int status;
     char line[LINE_LENGTH];
-    char *tokens[MAX_ARGS];
+    char *tokens[MAX_ARGS + 1];
     char inputFile[MAX_LENGTH];
     char outputFile[MAX_LENGTH];
     int argsNum;
@@ -118,22 +120,27 @@ int main(int argc, char *argv[])
         printf(">>");
 
         readLine(line);
-        cout << "after reading line" << endl;
-        // strcpy(line, "grep you <input.txt >output.txt");
+        // strcpy(line, "sleep 3");
         argsNum = splitCommands(line, tokens);
         cout << "after splitCommand" << endl;
 
         takesInFile(tokens, inputFile, outputFile, isUsingFile);
         cout << "after takesInFile" << endl;
-        isBackGround = strcmp(tokens[argsNum - 1], "&") == 0;
+        isBackGround = strcmp(tokens[argsNum - 1], "&") == 0; // TODOif this is background,remove the last character
         cout << "after Isbackground" << endl;
+
+        cout << "isUsingFile[0] " << isUsingFile[0] << endl;
+        cout << "isUsingFile[1] " << isUsingFile[1] << endl;
 
         if (isUsingFile[0] || isUsingFile[1])
         {
+            cout << "removing file names" << endl;
             removeFileNamesFromArgs(tokens);
         }
+        cout << "after seing is using file" << endl;
         if (isBuiltInCMD(tokens))
         {
+
             status = execBuiltInCmd(tokens);
         }
         else

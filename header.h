@@ -9,6 +9,8 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
+#include <cstring>
+#include <vector>
 
 using namespace std;
 
@@ -22,5 +24,24 @@ void takesInFile(char *args[], char *inputFile, char *outputFile, bool *isUsingF
 int splitCommands(char *inputLine, char *args[]);
 void readLine(char *line);
 void removeFileNamesFromArgs(char *args[]);
+
+class Process
+{
+public:
+    Process(pid_t pid, string command);
+
+private:
+    pid_t pid;
+    string command;
+};
+class ProcessTable
+{
+public:
+    vector<Process> pcd;
+    void addProcessToTable(Process p);
+    void removeProcessFromTable(Process p);
+
+private:
+};
 
 #endif
