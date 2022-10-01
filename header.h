@@ -8,6 +8,7 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
 
 using namespace std;
 
@@ -18,7 +19,8 @@ const int MAX_LENGTH = 20;    // Max # of characters in an argument
 const int AX_PT_ENTRIES = 32; // Max entries in the Process Table
 
 void takesInFile(char *args[], char *inputFile, char *outputFile, bool *isUsingFile);
-void splitCommands(char *inputLine, char *args[]);
+int splitCommands(char *inputLine, char *args[]);
 void readLine(char *line);
+void removeFileNamesFromArgs(char *args[]);
 
 #endif
