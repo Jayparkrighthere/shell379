@@ -5,7 +5,7 @@ shell379: shell.out
 	./shell.out
 
 shell.out: $(OBJ)
-	$(CC) -o shell.out $(OBJ)
+	$(CC) -o shell.out $(OBJ) -g
 main.o: 
 	$(CC) -c main.cpp
 process_input.o:

@@ -77,6 +77,7 @@ void readLine(char *line)
 {
     char *inputLine = NULL;
     size_t linecap = 100 * sizeof(char);
+    clearerr(stdin);
     if (getline(&inputLine, &linecap, stdin) < 0)
     {
         perror("getline");

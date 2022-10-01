@@ -1,15 +1,9 @@
 #include "header.h"
 #define __SHELL379_H_
 
-void reapZombies(int signum)
-{
-    // http://www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html
-    int status;
-    // WNOHANG:return immediately if no child has exited.
-    while (waitpid(-1, &status, WNOHANG) > 0)
-    {
-    }
-}
+// TODO: test if ps returns the command you used for you shell379 programs
+// TODO: processConroltable class.
+
 int execBuiltInCmd(char *args[])
 {
     if (strcmp(args[0], "sleep") == 0)
@@ -114,25 +108,25 @@ int main(int argc, char *argv[])
     char inputFile[MAX_LENGTH];
     char outputFile[MAX_LENGTH];
     int argsNum;
+    signal(SIGCHLD, SIG_IGN);
 
-    struct sigaction sa;
-    sa.sa_flags = 0;
-    sa.sa_handler = reapZombies;
     // ensure no zombie child process in our program
-    sigaction(SIGCHLD, &sa, NULL);
     bool isBackGround = false;
     bool isUsingFile[2];
     do
     {
         printf(">>");
+
         readLine(line);
+        cout << "after reading line" << endl;
         // strcpy(line, "grep you <input.txt >output.txt");
         argsNum = splitCommands(line, tokens);
-        // cout << "after splitCommand" << endl;
+        cout << "after splitCommand" << endl;
 
         takesInFile(tokens, inputFile, outputFile, isUsingFile);
-        // cout << "after takesInFile" << endl;
+        cout << "after takesInFile" << endl;
         isBackGround = strcmp(tokens[argsNum - 1], "&") == 0;
+        cout << "after Isbackground" << endl;
 
         if (isUsingFile[0] || isUsingFile[1])
         {
