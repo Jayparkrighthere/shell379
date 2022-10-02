@@ -24,22 +24,32 @@ void takesInFile(char *args[], char *inputFile, char *outputFile, bool *isUsingF
 int splitCommands(char *inputLine, char *args[]);
 void readLine(char *line);
 void removeFileNamesFromArgs(char *args[]);
+void handleSigchl(int sig);
+void printUsage(string printLine);
+int execBuiltInCmd(char *args[], char *line, int bltInCode);
+int execCMD(char *args[], char *line, char *inputFile, char *outputFile, bool *isUsingFiles, bool isBackGround);
+int BuiltInCMDCode(char *args[]);
 
 class Process
 {
 public:
-    Process(pid_t pid, string command);
+    Process(pid_t pid, char command[]);
+
+    pid_t pid;
+    char *command;
 
 private:
-    pid_t pid;
-    string command;
 };
 class ProcessTable
 {
 public:
-    vector<Process> pcd;
+    vector<Process> pcb;
+    int getTableSize();
     void addProcessToTable(Process p);
     void removeProcessFromTable(Process p);
+    void printProcessTable();
+    void getStatusByPid(pid_t pid);
+    void clearTable();
 
 private:
 };
