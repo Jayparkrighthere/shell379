@@ -2,9 +2,7 @@
 #define __SHELL379_H_
 #include <cstring>
 using namespace std;
-
-// TODO: test if ps returns the command you used for you shell379 programs
-// TODO: processConroltable class.
+// TODO: test what you have on lab machine first! if error, maybe from prcoess.command?
 
 int main(int argc, char *argv[])
 {
@@ -23,6 +21,7 @@ int main(int argc, char *argv[])
         printf(">>");
 
         readLine(line);
+        string lineStr(line);
         // strcpy(line, "sleep 3");
         argsNum = splitCommands(line, tokens);
 
@@ -41,11 +40,11 @@ int main(int argc, char *argv[])
         int bltInCode = BuiltInCMDCode(tokens);
         if (bltInCode < 0)
         {
-            status = execCMD(tokens, line, inputFile, outputFile, isUsingFile, isBackGround);
+            status = execCMD(tokens, lineStr, inputFile, outputFile, isUsingFile, isBackGround);
         }
         else
         {
-            status = execBuiltInCmd(tokens, line, bltInCode);
+            status = execBuiltInCmd(tokens, lineStr, bltInCode);
         }
 
         // clean up files

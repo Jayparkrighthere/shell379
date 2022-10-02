@@ -1,26 +1,47 @@
 #include "header.h"
 // TODO: parse the values returned from ps
-void ProcessTable ::addProcessToTable(Process p)
+ProcessTable::ProcessTable()
 {
-    cout << "adding process to table:" << endl;
-    cout << "pid = " << p.pid << " coammnd = " << p.command << endl;
-    pcb.push_back(p);
+    activeNum = 0;
 }
 
-void ProcessTable ::removeProcessFromTable(Process p)
+void ProcessTable ::addProcessToTable(Process p)
 {
-    cout << "clearing all the vectors" << endl;
+    pcb.push_back(p);
+    activeNum++;
+}
+
+void ProcessTable ::removeProcessFromTable(pid_t pid)
+{
     for (vector<Process>::iterator it = pcb.begin(); it != pcb.end(); ++it)
     {
-        if (it->pid == p.pid)
+        if (it->pid == pid)
         {
             pcb.erase(it);
             break;
         }
     }
-    pcb.clear();
+    activeNum--;
 }
-void ProcessTable::getStatusByPid(pid_t pid)
+
+void ProcessTable ::killAllProcessFromTable()
+{
+    for (vector<Process>::iterator it = pcb.begin(); it != pcb.end(); ++it)
+    {
+        killProcess(it->pid);
+        activeNum--;
+    }
+    if (activeNum > 0)
+    {
+        cout << "still uncleaned process left in table" << endl;
+    }
+    else if (activeNum < 0)
+    {
+        cout << "killAllProcessFromTable error" << endl;
+    }
+}
+
+void ProcessTable::printStatusByPid(pid_t pid, string command)
 {
     char *psArgs[5];
     char pidBuffer[1024];
@@ -28,26 +49,25 @@ void ProcessTable::getStatusByPid(pid_t pid)
     FILE *fp;
 
     sprintf(pidBuffer, "%d", pid);
-    cout << "pid char array is" << pidBuffer << endl;
 
-    // char str1[100] = "ps -p ";
-    // char str2[20] = " -o pid,state,time";
-    // strcat(str1, pidBuffer);
-    // strcat(str1, str2);
-    psArgs[0] = "ps ";
-    psArgs[1] = "-p ";
-    psArgs[2] = pidBuffer;
-    psArgs[3] = " -o ";
-    psArgs[4] = "pid,state,time";
-    psArgs[5] = NULL; // marks end of args
-    fp = popen(*psArgs, "r");
-    // cout << "str1 is " << str1 << endl;
-    // fp = popen(str1, "r");
-
+    char str1[100] = "ps -p ";
+    char str2[20] = " -o pid,stat,time";
+    strcat(str1, pidBuffer);
+    strcat(str1, str2);
+    fp = popen(str1, "r");
+    int index = 0;
     while (fgets(pStatusBuffer, 1024, fp) != NULL)
     {
-        cout << "printing from ps: " << endl;
-        cout << pStatusBuffer << endl;
+        if (index)
+        {
+            string statusStr(pStatusBuffer);
+            statusStr = regex_replace(statusStr, regex("\\n"), "");
+            cout << index++ << ":   ";
+            cout << statusStr;
+            cout << command << endl;
+        }
+
+        index++;
     }
     pclose(fp);
 }
@@ -60,17 +80,35 @@ void ProcessTable::clearTable()
 void ProcessTable::printProcessTable()
 {
     cout << "Running processes:" << endl;
-    cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
-    for (vector<Process>::iterator it = pcb.begin(); it != pcb.end(); ++it)
+    if (getTableSize() > 0)
     {
-        cout << "pid:" << (it->pid) << endl;
-        getStatusByPid(it->pid);
+        cout << "#      PID S   SEC     COMMAND" << endl;
+        for (vector<Process>::iterator it = pcb.begin(); it != pcb.end(); ++it)
+        {
+            cout << "pid = " << it->pid << " coammnd = " << it->command << endl;
+            printStatusByPid(it->pid, it->command);
+        }
     }
-    cout << "<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<" << endl;
-    clearTable();
+
+    cout << "Processes =      " << getNumActive() << " active" << endl;
 }
 
 int ProcessTable::getTableSize()
 {
     return pcb.size();
+}
+
+int ProcessTable::getNumActive()
+{
+    return activeNum;
+}
+
+void ProcessTable::suspendProcess()
+{
+    activeNum--;
+}
+
+void ProcessTable::resumeProcess()
+{
+    activeNum++;
 }

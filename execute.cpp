@@ -1,5 +1,5 @@
 #include "header.h"
-ProcessTable processTable;
+ProcessTable processTable = ProcessTable();
 
 void handleSigchl(int sig)
 {
@@ -9,16 +9,15 @@ void handleSigchl(int sig)
     }
 }
 
-void killProcess(char *args[], char *line)
+void killProcess(pid_t pid)
 {
 
-    if (kill(atoi(args[1]), SIGKILL) < 0)
+    if (kill(pid, SIGKILL) < 0)
     {
         perror("Kill");
     }
-    Process rp = Process(atoi(args[1]), line);
-    processTable.removeProcessFromTable(rp);
 }
+
 void printUsage(string printLine)
 {
     struct rusage usage;
@@ -27,9 +26,8 @@ void printUsage(string printLine)
     cout << "User time =        " << usage.ru_utime.tv_sec << endl;
     cout << "Sys  time =        " << usage.ru_stime.tv_sec << endl;
 }
-int execBuiltInCmd(char *args[], char *line, int bltInCode)
+int execBuiltInCmd(char *args[], string cmd, int bltInCode)
 {
-    cout << "exectuing execbuildin cmd" << endl;
     /**
      * exit     0
      * jobs     1
@@ -43,6 +41,8 @@ int execBuiltInCmd(char *args[], char *line, int bltInCode)
     {
     // exit
     case 0:
+        processTable.killAllProcessFromTable();
+        processTable.clearTable();
         printUsage("Resources used");
         _exit(0);
     // jobs
@@ -55,13 +55,27 @@ int execBuiltInCmd(char *args[], char *line, int bltInCode)
         if ((args[1]) == NULL)
         {
             cout << "kill : not enought arguments" << endl;
-            cout << "Usage kill <pid>" << endl;
+            cout << "Usage: kill <pid>" << endl;
             return 1;
         }
-        killProcess(args, line);
+        killProcess(atoi(args[1]));
+        processTable.removeProcessFromTable(atoi(args[1]));
+
         break;
     // resume
     case 3:
+        if ((args[1]) == NULL)
+        {
+            cout << "Resume : not enought arguments" << endl;
+            cout << "Usage: resume <pid>" << endl;
+            return 1;
+        }
+        if (kill(atoi(args[1]), SIGCONT) < 0)
+        {
+            perror("Kill -SIGCONT");
+        }
+        processTable.resumeProcess();
+        // Do any thing in the process table?
         break;
     // sleep
     case 4:
@@ -69,24 +83,43 @@ int execBuiltInCmd(char *args[], char *line, int bltInCode)
         if ((args[1]) == NULL)
         {
             cout << "sleep : not enought arguments" << endl;
-            cout << "Usage sleep <int>" << endl;
+            cout << "Usage: sleep <int>" << endl;
             return 1;
         }
         sleep(atoi(args[1]));
         break;
     // suspend
     case 5:
+        if ((args[1]) == NULL)
+        {
+            cout << "suspend : not enought arguments" << endl;
+            cout << "usage: suspend <pid>" << endl;
+            return 1;
+        }
+        if (kill(atoi(args[1]), SIGSTOP) < 0)
+        {
+            perror("Kill -SIGSTOP");
+        }
+        processTable.suspendProcess();
+        // Do any thing in the process table?
         break;
     // wait
     case 6:
+        if ((args[1]) == NULL)
+        {
+            cout << "wait : not enought arguments" << endl;
+            cout << "usage: wait <pid>" << endl;
+            return 1;
+        }
+        int status;
+        waitpid(atoi(args[1]), &status, 0);
         break;
     };
     return 1;
 }
 
-int execCMD(char *args[], char *line, char *inputFile, char *outputFile, bool *isUsingFiles, bool isBackGround)
+int execCMD(char *args[], string cmd, char *inputFile, char *outputFile, bool *isUsingFiles, bool isBackGround)
 {
-    cout << "exectuing normal cmd" << endl;
     int inputFileDescriptor, outputFileDescriptor;
 
     // create new process here
@@ -104,7 +137,6 @@ int execCMD(char *args[], char *line, char *inputFile, char *outputFile, bool *i
         // if reading from file, change stdin descriptor to file descriptor.
         if (isUsingFiles[0])
         {
-            cout << "try open input file" << endl;
             inputFileDescriptor = open(inputFile, O_RDONLY, S_IRWXU);
             if (inputFileDescriptor < 0)
             {
@@ -140,12 +172,11 @@ int execCMD(char *args[], char *line, char *inputFile, char *outputFile, bool *i
 
         if (!isBackGround)
         {
-            cout << "this is parent. child process not running in background" << endl;
             waitpid(pid, &status, 0);
         }
         else
         {
-            Process p = Process(pid, line);
+            Process p = Process(pid, cmd);
             processTable.addProcessToTable(p);
             signal(SIGCHLD, handleSigchl);
         }
@@ -155,13 +186,13 @@ int execCMD(char *args[], char *line, char *inputFile, char *outputFile, bool *i
 
 int BuiltInCMDCode(char *args[])
 {
-    char *builtInCMD[8] = {"exit",
-                           "jobs",
-                           "kill",
-                           "resume",
-                           "sleep",
-                           "suspend",
-                           "wait", NULL};
+    const char *builtInCMD[8] = {"exit",
+                                 "jobs",
+                                 "kill",
+                                 "resume",
+                                 "sleep",
+                                 "suspend",
+                                 "wait", NULL};
     int index = 0;
     while (builtInCMD[index] != NULL)
     {

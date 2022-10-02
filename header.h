@@ -11,6 +11,8 @@
 #include <signal.h>
 #include <cstring>
 #include <vector>
+#include <string>
+#include <regex>
 
 using namespace std;
 
@@ -26,17 +28,18 @@ void readLine(char *line);
 void removeFileNamesFromArgs(char *args[]);
 void handleSigchl(int sig);
 void printUsage(string printLine);
-int execBuiltInCmd(char *args[], char *line, int bltInCode);
-int execCMD(char *args[], char *line, char *inputFile, char *outputFile, bool *isUsingFiles, bool isBackGround);
+int execBuiltInCmd(char *args[], string cmd, int bltInCode);
+void killProcess(pid_t pid);
+int execCMD(char *args[], string cmd, char *inputFile, char *outputFile, bool *isUsingFiles, bool isBackGround);
 int BuiltInCMDCode(char *args[]);
 
 class Process
 {
 public:
-    Process(pid_t pid, char command[]);
+    Process(pid_t pid, string command);
 
     pid_t pid;
-    char *command;
+    string command;
 
 private:
 };
@@ -44,14 +47,20 @@ class ProcessTable
 {
 public:
     vector<Process> pcb;
+    ProcessTable();
     int getTableSize();
     void addProcessToTable(Process p);
-    void removeProcessFromTable(Process p);
+    void removeProcessFromTable(pid_t pid);
+    void killAllProcessFromTable();
     void printProcessTable();
-    void getStatusByPid(pid_t pid);
+    void printStatusByPid(pid_t pid, string command);
     void clearTable();
+    void suspendProcess();
+    void resumeProcess();
+    int getNumActive();
 
 private:
+    int activeNum;
 };
 
 #endif
