@@ -1,0 +1,48 @@
+Name: Qi Zhou
+ID #: 1629508
+CMPUT 379 LEC EA1 - FALL 2022
+
+Assignment 1
+
+Included Files:
+    format_input.cpp
+    process_table.cpp
+    process.cpp
+    execute.cpp
+    header.h
+    main.cpp
+    Makefile
+    README
+
+Acknowledgement:
+    knowledge of signal, pip, popen,exit from   
+        Lab 2,3 codes
+    knowledge of sigchld handler is from:
+        http: // www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html
+
+
+Note:
+    Runnig jobs command will show a process table:
+        1. Status can be T+, S+, or R+. 
+            T+ : process is stopped(suspended)
+            R+ : process is running
+            S+ : process is sleeping.
+        2. Process in S+ or R+ state is considered as active process
+        3. running command: suspend <pid> will stop a process and turn the status from
+            R+ to T+
+        4. running command: resume <pid> will resume a process and turn the status from
+            T+ to R+
+Assumption:
+    1.Operators <,>,& will not be used with the
+    following command:
+        exit
+        jobs
+        kill <pid>
+        resume <pid>
+        sleep <int>
+        suspend <pid>
+        wait <pid>
+    2.process status table can not hold more than 32 entries
+        if exceed, process will not be added to the table, and
+        can not run in background anymore.
+

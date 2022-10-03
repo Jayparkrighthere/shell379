@@ -13,6 +13,7 @@
 #include <vector>
 #include <string>
 #include <regex>
+#include <sys/resource.h>
 
 using namespace std;
 
@@ -33,6 +34,10 @@ void killProcess(pid_t pid);
 int execCMD(char *args[], string cmd, char *inputFile, char *outputFile, bool *isUsingFiles, bool isBackGround);
 int BuiltInCMDCode(char *args[]);
 
+/*
+    Description:Each process hold a pid, and
+    a command used that was used to creat this process
+*/
 class Process
 {
 public:
@@ -43,24 +48,34 @@ public:
 
 private:
 };
+
+/*
+    Description: process table keep tracks
+        of all the process created by our shell.
+*/
 class ProcessTable
 {
 public:
-    vector<Process> pcb;
+    vector<Process> pcb; // record all process in R,S,T states
     ProcessTable();
     int getTableSize();
     void addProcessToTable(Process p);
     void removeProcessFromTable(pid_t pid);
     void killAllProcessFromTable();
     void printProcessTable();
-    void printStatusByPid(pid_t pid, string command);
+    bool printStatusByPid(pid_t pid, string command, int entrCount);
     void clearTable();
-    void suspendProcess();
-    void resumeProcess();
+    void suspendProcess(pid_t pid);
+    void resumeProcess(pid_t pid);
     int getNumActive();
+    void upDateTable();
+    void removeSuspProcess(pid_t pid);
+    bool isSuspendedProcess(pid_t pid);
 
 private:
     int activeNum;
+    vector<pid_t> completedProcesses; // record finish process, but yet removed from pcb
+    vector<pid_t> suspendedProcesses; // record all process in T state.
 };
 
 #endif

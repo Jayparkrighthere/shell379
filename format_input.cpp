@@ -27,12 +27,12 @@ void removeFileNamesFromArgs(char *args[])
 
 void takesInFile(char *args[], char *inputFile, char *outputFile, bool *isUsingFile)
 {
-    int i = 1;
 
     isUsingFile[0] = false;
     isUsingFile[1] = false;
 
     // get input or output file name from args
+    int i = 1;
     while (args[i] != NULL)
     {
 
@@ -51,14 +51,12 @@ void takesInFile(char *args[], char *inputFile, char *outputFile, bool *isUsingF
             strcpy(outputFile, fileTemp);
         }
         i++;
-        // we should end the loop actaully
     };
-
-    // see if this process needs to be in the background or not
 }
-// split the input line by spaces
+
 int splitCommands(char *inputLine, char *args[])
 {
+    // split the input line by spaces
     char *arg;
     int i = 0;
     arg = strtok(inputLine, DELIM);
@@ -72,9 +70,9 @@ int splitCommands(char *inputLine, char *args[])
     return i;
 }
 
-// This function reads input line
 void readLine(char *line)
 {
+    // read from input line
     char *inputLine = NULL;
     size_t linecap = 100 * sizeof(char);
     clearerr(stdin);

@@ -3,7 +3,7 @@ ProcessTable processTable = ProcessTable();
 
 void handleSigchl(int sig)
 {
-    // http: // www.microhowto.info/howto/reap_zombie_processes_using_a_sigchld_handler.html
+
     while (waitpid((pid_t)(-1), 0, WNOHANG) > 0)
     {
     }
@@ -28,15 +28,6 @@ void printUsage(string printLine)
 }
 int execBuiltInCmd(char *args[], string cmd, int bltInCode)
 {
-    /**
-     * exit     0
-     * jobs     1
-     * kill     2
-     * resume   3
-     * sleep    4
-     * suspend  5
-     * wait     6
-     * */
     switch (bltInCode)
     {
     // exit
@@ -74,12 +65,10 @@ int execBuiltInCmd(char *args[], string cmd, int bltInCode)
         {
             perror("Kill -SIGCONT");
         }
-        processTable.resumeProcess();
-        // Do any thing in the process table?
+        processTable.resumeProcess(atoi(args[1]));
         break;
     // sleep
     case 4:
-        cout << "executing sleep" << endl;
         if ((args[1]) == NULL)
         {
             cout << "sleep : not enought arguments" << endl;
@@ -100,8 +89,7 @@ int execBuiltInCmd(char *args[], string cmd, int bltInCode)
         {
             perror("Kill -SIGSTOP");
         }
-        processTable.suspendProcess();
-        // Do any thing in the process table?
+        processTable.suspendProcess(atoi(args[1]));
         break;
     // wait
     case 6:
@@ -111,8 +99,18 @@ int execBuiltInCmd(char *args[], string cmd, int bltInCode)
             cout << "usage: wait <pid>" << endl;
             return 1;
         }
-        int status;
-        waitpid(atoi(args[1]), &status, 0);
+        if (processTable.isSuspendedProcess(atoi(args[1])))
+        {
+            cout << "could not wait on a suspended process. resume it first." << endl;
+            return 1;
+        }
+        else
+        {
+            int status;
+            waitpid(atoi(args[1]), &status, 0);
+            processTable.removeProcessFromTable(atoi(args[1]));
+        }
+
         break;
     };
     return 1;
@@ -149,7 +147,7 @@ int execCMD(char *args[], string cmd, char *inputFile, char *outputFile, bool *i
         // Same for output file.
         if (isUsingFiles[1])
         {
-            outputFileDescriptor = open(outputFile, O_CREAT | O_WRONLY, S_IRWXU);
+            outputFileDescriptor = open(outputFile, O_CREAT | O_WRONLY | O_TRUNC, S_IRWXU);
             if (outputFileDescriptor < 0)
             {
                 perror("output file open failed");
@@ -163,8 +161,6 @@ int execCMD(char *args[], string cmd, char *inputFile, char *outputFile, bool *i
             perror("execvp");
             return 0;
         }
-
-        printf("this shouldn't print out\n"); // because it exect
     }
     // parent process
     else
@@ -176,6 +172,13 @@ int execCMD(char *args[], string cmd, char *inputFile, char *outputFile, bool *i
         }
         else
         {
+            if (processTable.getTableSize() >= AX_PT_ENTRIES)
+            {
+                cout << "exceeding max entries pcb can hold" << endl;
+                cout << "can not run this process in background" << endl;
+                waitpid(pid, &status, 0);
+                return 1;
+            }
             Process p = Process(pid, cmd);
             processTable.addProcessToTable(p);
             signal(SIGCHLD, handleSigchl);

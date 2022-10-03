@@ -1,11 +1,8 @@
 CC = g++
 OBJ = main.o format_input.o process.o process_table.o execute.o
 
-shell379: shell.out
-	./shell.out
-
-shell.out: $(OBJ)
-	$(CC) -o shell.out $(OBJ) -g
+shell379: $(OBJ)
+	$(CC) -o shell379 $(OBJ) -g
 main.o: 
 	$(CC) -c main.cpp
 format_input.o:
@@ -19,4 +16,4 @@ process_table.o:
 execute.o :
 	$(CC) -c execute.cpp
 clean:
-	rm -f shell.out $(OBJ)
+	rm -f shell379 $(OBJ)
